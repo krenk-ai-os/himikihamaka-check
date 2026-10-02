@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: mediastream:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>HimikiHamaka — проверка</title>
+  <meta name="description" content="Проверка возможностей устройства для домашней описи HimikiHamaka (этап 0). Ничего не отправляет.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#F1EFEA" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#2E2420" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Проверка">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+<noscript><p class="note">Для работы страницы нужен JavaScript.</p></noscript>
+<div class="app" id="app">
+  <header class="app-header">
+    <h1>HimikiHamaka · проверка этапа&nbsp;0</h1>
+    <div class="chips"><span class="chip" id="chip-mode">…</span><span class="chip" id="chip-net">…</span></div>
+  </header>
+
+  <nav class="nav" aria-label="Разделы проверки">
+    <button type="button" class="nav-btn" data-section="device">Устройство</button>
+    <button type="button" class="nav-btn" data-section="install">Установка</button>
+    <button type="button" class="nav-btn" data-section="camera">Камера и&nbsp;QR</button>
+    <button type="button" class="nav-btn" data-section="dictation">Диктовка</button>
+    <button type="button" class="nav-btn" data-section="storage">Хранилище</button>
+    <button type="button" class="nav-btn" data-section="print">Печать</button>
+    <button type="button" class="nav-btn" data-section="summary">Итог</button>
+  </nav>
+
+  <main>
+    <!-- ============================== УСТРОЙСТВО -->
+    <section class="section" id="sec-device" hidden>
+      <h2>Устройство</h2>
+      <div class="card">
+        <dl class="kv" id="dev-kv"></dl>
+        <p class="note warn-note" id="dev-note" hidden></p>
+      </div>
+      <div class="card">
+        <h3>User agent</h3>
+        <code class="ua" id="dev-ua"></code>
+      </div>
+      <button type="button" class="btn btn-block next" data-goto="install">Дальше: установка →</button>
+    </section>
+
+    <!-- ============================== УСТАНОВКА -->
+    <section class="section" id="sec-install" hidden>
+      <h2>Установка на экран «Домой»</h2>
+      <p class="status" id="inst-mode" role="status"></p>
+      <div class="card">
+        <h3>Как установить (iPhone, Safari)</h3>
+        <ol class="steps">
+          <li>Откройте эту страницу в&nbsp;<b>Safari</b>.</li>
+          <li>Нажмите <b>«Поделиться»</b> (квадрат со стрелкой вверх). В&nbsp;iOS&nbsp;26: кнопка <b>«•••»</b> рядом с адресом → <b>«Поделиться»</b>.</li>
+          <li>Прокрутите вниз и выберите <b>«На экран „Домой“»</b>.</li>
+          <li>Оставьте включённым <b>«Открывать как веб-приложение»</b> (если есть) и нажмите <b>«Добавить»</b>.</li>
+          <li>Запустите значок <b>«Проверка»</b> с экрана «Домой» и пройдите проверки уже в нём.</li>
+        </ol>
+        <p class="note">У приложения с экрана «Домой» свои разрешения (камера) и своё хранилище, отдельные от Safari.</p>
+      </div>
+      <div class="card">
+        <h3>Офлайн-режим</h3>
+        <dl class="kv" id="inst-sw"></dl>
+        <button type="button" class="btn btn-small" id="inst-refresh">Обновить состояние</button>
+        <h4>Проверка без сети</h4>
+        <ol class="steps">
+          <li>Откройте приложение с экрана «Домой» при включённом интернете и дождитесь строки «Офлайн-кэш: готов».</li>
+          <li><b>Включите авиарежим, закройте приложение</b> (смахните его вверх в переключателе приложений) <b>и откройте снова</b>.</li>
+          <li>Если страница открылась — офлайн работает. Отметьте результат:</li>
+        </ol>
+        <div class="answer-row">
+          <span>В авиарежиме открылось:</span>
+          <button type="button" class="btn toggle" id="inst-offline-yes" aria-pressed="false">Да</button>
+          <button type="button" class="btn toggle" id="inst-offline-no" aria-pressed="false">Нет</button>
+        </div>
+        <p class="muted small" id="inst-offline-answer"></p>
+      </div>
+      <button type="button" class="btn btn-block next" data-goto="camera">Дальше: камера и QR →</button>
+    </section>
+
+    <!-- ============================== КАМЕРА И QR -->
+    <section class="section" id="sec-camera" hidden>
+      <h2>Камера и QR</h2>
+      <div class="video-box" id="cam-box">
+        <video id="cam-video" playsinline muted autoplay></video>
+        <div class="guide" id="cam-guide" aria-hidden="true"></div>
+        <div class="cam-placeholder" id="cam-placeholder">Камера выключена</div>
+      </div>
+      <p class="status" id="cam-status" role="status" aria-live="polite">Нажмите «Включить камеру». Держите телефон в 10–20 см от наклейки.</p>
+      <p class="status small" id="cam-decoder">Декодер: ещё не запущен</p>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="cam-start">Включить камеру</button>
+        <button type="button" class="btn" id="cam-stop" hidden>Выключить камеру</button>
+      </div>
+
+      <div class="card result-card">
+        <div class="scan-text muted" id="scan-text" aria-live="assertive">—</div>
+        <div class="scan-time" id="scan-time"></div>
+        <p class="muted small" id="scan-hint">После включения камеры сканирование начнётся сразу.</p>
+        <button type="button" class="btn btn-primary btn-block btn-big" id="scan-next" disabled>Следующий скан</button>
+      </div>
+
+      <div class="card">
+        <label class="field">
+          <span>Камера</span>
+          <select id="cam-select">
+            <option value="">Авто — задняя камера (facingMode: environment)</option>
+          </select>
+        </label>
+        <p class="muted small" id="cam-select-note">Список камер с названиями появится после разрешения доступа. Выбор запоминается на этом устройстве.</p>
+        <label class="field">
+          <span>Зона распознавания (центр кадра)</span>
+          <select id="cam-crop">
+            <option value="50">50 % — только центр</option>
+            <option value="70">70 % — по умолчанию</option>
+            <option value="90">90 % — почти весь кадр</option>
+          </select>
+        </label>
+        <div class="field" id="cam-zoom-row" hidden>
+          <label for="cam-zoom">Зум: <b id="cam-zoom-value">1×</b></label>
+          <input type="range" id="cam-zoom" min="1" max="2" step="0.1" value="1">
+        </div>
+        <div class="torch-row">
+          <button type="button" class="btn toggle" id="cam-torch" aria-pressed="false" hidden>Фонарик: выкл</button>
+          <span class="muted small" id="cam-torch-note"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Серия из 20</h3>
+        <p class="muted small">Сканируйте наклейки одну за другой. Время считается от нажатия «Серия из 20» / «Следующий скан» до распознавания. Цель: не менее 95&nbsp;% сканов за 1,5&nbsp;с на 10–20&nbsp;см под одной лампочкой.</p>
+        <div class="btn-row">
+          <button type="button" class="btn btn-primary" id="series-start" disabled>Серия из 20</button>
+          <button type="button" class="btn" id="series-fail" disabled>Не читается</button>
+          <button type="button" class="btn" id="series-abort" disabled>Прервать</button>
+        </div>
+        <label class="check"><input type="checkbox" id="series-skiprepeat" checked> Не засчитывать повтор того же кода подряд</label>
+        <p class="status" id="series-progress"></p>
+        <dl class="kv" id="series-stats"></dl>
+        <p class="status" id="series-verdict"></p>
+        <details>
+          <summary>Попытки серии</summary>
+          <ol class="attempts" id="series-list"></ol>
+        </details>
+        <details>
+          <summary>Последние сканы</summary>
+          <ol class="attempts" id="scan-history"></ol>
+        </details>
+      </div>
+
+      <div class="card">
+        <h3>Параметры камеры</h3>
+        <dl class="kv" id="cam-caps"><dt>Камера</dt><dd>включите камеру</dd></dl>
+        <details>
+          <summary>getSettings() и getCapabilities() полностью</summary>
+          <pre class="pre" id="cam-raw">—</pre>
+        </details>
+      </div>
+
+      <div class="card">
+        <h3>Повторный запрос разрешения</h3>
+        <p class="muted small">Кнопка трижды полностью выключает и снова включает камеру. Смотрите, спросит ли iOS разрешение заново.</p>
+        <button type="button" class="btn" id="restart-run">Перезапустить камеру 3 раза</button>
+        <ol class="attempts" id="restart-log"></ol>
+        <div id="restart-question" hidden>
+          <div class="answer-row">
+            <span>iOS спросил разрешение снова:</span>
+            <button type="button" class="btn toggle" id="restart-yes" aria-pressed="false">Да</button>
+            <button type="button" class="btn toggle" id="restart-no" aria-pressed="false">Нет</button>
+          </div>
+          <p class="muted small" id="restart-answer"></p>
+        </div>
+        <p class="muted small" id="cam-permission"></p>
+      </div>
+
+      <details class="card diag">
+        <summary>Диагностика</summary>
+        <button type="button" class="btn" id="selftest-run">Самопроверка декодера</button>
+        <p class="status pre" id="selftest-out"></p>
+        <label class="field">
+          <span>Декодер</span>
+          <select id="decoder-mode">
+            <option value="auto">Авто: zxing-wasm (запасной — jsQR)</option>
+            <option value="jsqr">Только jsQR (для сравнения)</option>
+          </select>
+        </label>
+        <pre class="pre small" id="decoder-log"></pre>
+      </details>
+
+      <button type="button" class="btn btn-block next" data-goto="dictation">Дальше: диктовка →</button>
+    </section>
+
+    <!-- ============================== ДИКТОВКА -->
+    <section class="section" id="sec-dictation" hidden>
+      <h2>Диктовка</h2>
+      <div class="card">
+        <ol class="steps">
+          <li><b>Включите авиарежим</b> — проверяем диктовку без сети.</li>
+          <li>Нажмите в поле ниже.</li>
+          <li>Нажмите <b>микрофон</b> на клавиатуре.</li>
+          <li>Продиктуйте: <i>«молоток, отвёртка, шурупы 3 штуки»</i>, затем <i>«2,5 метра кабеля, две пачки соли»</i>.</li>
+          <li>Проверьте таблицу разбора и отметьте результат внизу.</li>
+        </ol>
+        <p class="note">Если микрофона на клавиатуре нет: Настройки → Основные → Клавиатура → «Включение Диктовки».</p>
+      </div>
+      <div class="card">
+        <label class="field">
+          <span>Список вещей</span>
+          <textarea id="dict-list" rows="4" autocomplete="off" autocapitalize="sentences" placeholder="Например: молоток, отвёртка, шурупы 3 штуки"></textarea>
+        </label>
+        <div class="btn-row">
+          <button type="button" class="btn btn-small" id="dict-example">Вставить пример</button>
+          <button type="button" class="btn btn-small" id="dict-clear">Очистить</button>
+        </div>
+        <table class="table" id="dict-table">
+          <thead><tr><th>Позиция</th><th class="num">Количество</th><th>Единица</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <p class="muted small">Серым — не названо, подставлено по умолчанию.</p>
+      </div>
+      <div class="card">
+        <label class="field">
+          <span>Номер наклейки (продиктуйте, например, «аш 42»)</span>
+          <input type="text" id="dict-label" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="аш 42">
+        </label>
+        <div class="label-out muted" id="dict-label-out">—</div>
+        <p class="muted small" id="dict-label-note"></p>
+      </div>
+      <div class="card">
+        <div class="answer-row">
+          <span>Диктовка без сети работала:</span>
+          <button type="button" class="btn toggle" id="dict-offline-yes" aria-pressed="false">Да</button>
+          <button type="button" class="btn toggle" id="dict-offline-no" aria-pressed="false">Нет</button>
+        </div>
+        <p class="muted small" id="dict-offline-answer"></p>
+      </div>
+      <button type="button" class="btn btn-block next" data-goto="storage">Дальше: хранилище →</button>
+    </section>
+
+    <!-- ============================== ХРАНИЛИЩЕ -->
+    <section class="section" id="sec-storage" hidden>
+      <h2>Хранилище</h2>
+      <div class="card">
+        <dl class="kv" id="st-kv"></dl>
+        <div class="btn-row">
+          <button type="button" class="btn" id="st-persist">Запросить постоянное хранение</button>
+          <button type="button" class="btn btn-small" id="st-refresh">Обновить</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>IndexedDB</h3>
+        <p class="muted small">Записывает 1000 небольших записей, читает их обратно, сверяет и удаляет.</p>
+        <button type="button" class="btn" id="st-idb-run">Запустить тест (1000 записей)</button>
+        <p class="status" id="st-idb-out"></p>
+      </div>
+      <p class="note">В Safari данные сайта могут быть удалены, если им не пользоваться 7 дней; у приложения с экрана «Домой» этого ограничения нет.</p>
+      <button type="button" class="btn btn-block next" data-goto="print">Дальше: печать наклеек →</button>
+    </section>
+
+    <!-- ============================== ПЕЧАТЬ -->
+    <section class="section" id="sec-print" hidden>
+      <h2>Печать наклеек</h2>
+      <div class="card">
+        <p class="muted small">Раздел для Mac и термопринтера. Номера с буквой T — пробные, настоящие начинаются с H.</p>
+        <fieldset class="field">
+          <legend>Размер наклейки</legend>
+          <label class="radio"><input type="radio" name="label-size" value="58x40" checked> 58 × 40 мм</label>
+          <label class="radio"><input type="radio" name="label-size" value="30x20"> 30 × 20 мм</label>
+        </fieldset>
+        <div class="field-row">
+          <label class="field">
+            <span>Количество</span>
+            <input type="number" id="pr-count" min="1" max="200" step="1" value="20">
+          </label>
+          <label class="field">
+            <span>Первый номер</span>
+            <input type="text" id="pr-start" value="T0001" autocomplete="off" autocapitalize="characters" spellcheck="false">
+          </label>
+        </div>
+        <p class="status bad" id="pr-error" hidden></p>
+        <div class="btn-row">
+          <button type="button" class="btn" id="pr-render">Показать наклейки</button>
+          <button type="button" class="btn btn-primary" id="pr-print">Печать</button>
+        </div>
+        <p class="muted small" id="pr-info"></p>
+      </div>
+      <div class="card">
+        <h3>Как печатать на XP-365B</h3>
+        <ol class="steps">
+          <li>Принтер: <b>Xprinter XP-365B</b>, в нём рулон наклеек нужного размера.</li>
+          <li>Нажмите «Печать» (или ⌘P).</li>
+          <li>Размер бумаги: <b>свой — 58 × 40 мм</b> (или 30 × 20 мм). Если его нет: «Размер бумаги» → «Другие размеры…» → «+» → ширина и высота, все поля 0.</li>
+          <li>Масштаб: <b>100 %</b> (не «Вписать»).</li>
+          <li>Поля: <b>нет</b> (в Chrome: «Ещё настройки» → «Поля» → «Нет»).</li>
+          <li>Колонтитулы: <b>выключить</b> (Chrome: снять «Верхние и нижние колонтитулы»; Safari: снять «Печатать колонтитулы»).</li>
+          <li>В предпросмотре должна быть одна наклейка на странице, а страниц — столько же, сколько наклеек.</li>
+        </ol>
+        <p class="note">Предпросмотр ниже — в натуральную величину (если масштаб экрана стандартный). Пунктир виден только на экране.</p>
+      </div>
+      <div class="labels" id="labels"></div>
+    </section>
+
+    <!-- ============================== ИТОГ -->
+    <section class="section" id="sec-summary" hidden>
+      <h2>Итог</h2>
+      <p class="note">Ничего не отправляется автоматически. Нажмите «Скопировать результаты» и вставьте текст в чат сами.</p>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="sum-copy">Скопировать результаты</button>
+        <button type="button" class="btn" id="sum-refresh">Обновить</button>
+      </div>
+      <p class="status" id="sum-copy-status" role="status"></p>
+      <textarea class="copyarea" id="sum-copyarea" rows="8" readonly hidden></textarea>
+      <div class="card">
+        <pre class="pre summary" id="sum-text"></pre>
+      </div>
+      <details class="card">
+        <summary>JSON</summary>
+        <pre class="pre small" id="sum-json"></pre>
+      </details>
+      <button type="button" class="btn btn-small danger" id="sum-reset">Сбросить результаты</button>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span id="app-version"></span> · данные остаются только на этом устройстве
+  </footer>
+</div>
+</body>
+</html>

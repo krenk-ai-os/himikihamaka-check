@@ -1,0 +1,73 @@
+Сторонние библиотеки (лежат в репозитории)
+==========================================
+
+Во время работы страница ничего не загружает из интернета: все библиотеки — здесь.
+Ниже — откуда взят каждый файл, под какой лицензией и как его пересобрать.
+
+
+1. zxing-wasm 3.1.4, сборка «reader» — основной декодер QR
+----------------------------------------------------------
+Что это: zxing-cpp (C++), скомпилированный в WebAssembly, с JS-обёрткой zxing-wasm.
+Файлы:
+  zxing-wasm/reader/index.js           ES-модуль: обёртка zxing-wasm + JS-часть Emscripten
+  zxing-wasm/reader/zxing_reader.wasm  WebAssembly
+Лицензии:
+  zxing-wasm/LICENSE            MIT (zxing-wasm, Ze-Zheng Wu)
+  zxing-wasm/LICENSE.zxing-cpp  Apache-2.0 (zxing-cpp)
+  В .wasm также входят stb_image (public domain / MIT) и среда выполнения Emscripten
+  (MIT/UIUC; libc++ — Apache-2.0 WITH LLVM-exception; musl — MIT).
+
+Происхождение. Реестр npm был недоступен в среде, где готовилась страница, поэтому
+файлы собраны из исходников того же релиза, а не скопированы из npm-пакета:
+  zxing-wasm  https://github.com/Sec-ant/zxing-wasm  тег v3.1.4
+              (коммит ba54ad0bba3f2e230c0f0a503d8d71065ef39c30)
+  zxing-cpp   подмодуль, коммит 0b2d9a8fc81f420f369928c24331091ff0525976
+  stb         https://github.com/nothings/stb, коммит 2c980bb59875b0d32144a71867fbdebb2f77cd20
+              (подтягивается CMake FetchContent, как в обычной сборке zxing-wasm)
+Инструменты: Emscripten 3.1.52 (fa478400df3351f7153c0279bc638784d3d90334) с системным
+LLVM/clang 18.1.3 и Binaryen version_116; esbuild 0.27.7 для сборки JS.
+(Сам проект zxing-wasm собирается Emscripten 5.0.4; более старая версия выбрана потому,
+что она совместима с доступным LLVM 18. Флаги компиляции и компоновки — из проекта, -O3.)
+
+Единственное изменение исходников: в src/cpp/CMakeLists.txt
+  -s MIN_SAFARI_VERSION=130000  →  -s MIN_SAFARI_VERSION=150000
+(для Safari 13 Emscripten 3.1.52 требует Babel; все целевые устройства — Safari 18 и новее).
+
+Команды (в корне zxing-wasm, после git submodule update --init):
+  emcmake cmake -S src/cpp -B build-reader -G Ninja -DTARGET=READER
+  cmake --build build-reader
+      → src/reader/zxing_reader.js и src/reader/zxing_reader.wasm
+  esbuild src/reader/index.ts --bundle --format=esm \
+      --target=es2020,safari15,chrome85,firefox79 --legal-comments=inline --charset=utf8 \
+      --define:NPM_PACKAGE_VERSION='"3.1.4"' \
+      --define:SUBMODULE_COMMIT='"0b2d9a8fc81f420f369928c24331091ff0525976"' \
+      --define:READER_HASH='"<SHA-256 файла zxing_reader.wasm>"' \
+      --define:import.meta.env.MODE='"production"' --define:import.meta.env.PROD=true \
+      --define:import.meta.vitest=undefined \
+      --outfile=reader/index.js
+
+Путь к .wasm задаётся в js/zxing-options.js (locateFile), файл берётся только из этой папки.
+В коде библиотеки остаётся адрес CDN jsDelivr как значение по умолчанию — он не
+используется, потому что locateFile всегда переопределён.
+
+SHA-256:
+  5ea662e4860f485a10c3bc2af02a8a7770abbc118d75bbc64274d23036925c58  zxing-wasm/reader/zxing_reader.wasm
+  6add6b5d7cf7420057507b88e392df6ecaacaa105ea5dfef6370cb6947956d75  zxing-wasm/reader/index.js
+
+
+2. jsQR 1.4.0 — запасной декодер (если zxing-wasm не запустится)
+---------------------------------------------------------------
+Файл: jsqr/jsQR.js — UMD-сборка dist/jsQR.js из https://github.com/cozmo/jsQR
+      (коммит 8e6a036beafa7053dd44b1b76ac578d22b1b3311, версия пакета 1.4.0), без изменений.
+Лицензия: Apache-2.0 (jsqr/LICENSE)
+SHA-256: 3325b0888fa4745c4e6940897d8c4f426fbaae76901fcbfe1871a04e90a51655
+
+
+3. qrcode-generator 2.0.4 — QR-коды для печати наклеек и самопроверки
+--------------------------------------------------------------------
+Файл: qrcode-generator/qrcode.esm.js — это dist/qrcode.mjs пакета
+      (https://github.com/kazuhikoarase/qrcode-generator, тег js2.0.4,
+      коммит 83b7e8fe3fddd3b0368dbafd6ce56995bd25e3c8), содержимое не менялось;
+      расширение .js — чтобы любой сервер отдавал файл как JavaScript.
+Лицензия: MIT (qrcode-generator/LICENSE)
+SHA-256: ea91d7118a5395289170da848b7c6758b996163bfbccf312591ab65a4911b7c0
